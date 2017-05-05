@@ -7,7 +7,7 @@ use self::pty::prelude::*;
 use std::ffi;
 
 use std::io::prelude::*;
-use std::process::{Command, Stdio};
+use std::process::{exit, Command, Stdio};
 use std::ptr;
 use std::string::String;
 
@@ -38,7 +38,12 @@ fn it_fork_with_new_pty() {
         parent_tty_dir.pop();
         child_tty_dir.pop();
 
+        let (_pid, status) = fork.wait().ok().unwrap_or((0, 0));
+
         assert_eq!(parent_tty_dir, child_tty_dir);
+        assert_eq!(0, status);
+
+        exit(status);
     } else {
         let cmd = ffi::CString::new("tty").unwrap();
         let mut args: Vec<*const libc::c_char> = Vec::with_capacity(1);
